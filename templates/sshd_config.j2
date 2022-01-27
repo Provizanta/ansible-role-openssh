@@ -1,0 +1,22 @@
+{{ ansible_managed | comment }}
+
+{% macro render_value(k,v, indent='') -%}
+{%-  if v.__class__.__name__ == 'list' -%}
+{%     for vv in v%}
+{{ indent }}{{ k }} {% if vv.__class__.__name__ == 'bool' -%}{{ vv | ternary('yes','no') }}{%- else -%}{{ vv }}{%- endif %}
+{%     endfor %}
+{%   else %}
+{{ indent }}{{ k }} {% if v.__class__.__name__ == 'bool' -%}{{ v | ternary('yes','no') }}{%- else -%}{{ v }}{%- endif %}
+{%   endif %}
+{%- endmacro %}
+
+{% for setting, value in openssh_configuration.items() %}
+{{   render_value(setting, value) }}
+{% endfor %}
+
+{% for pattern, settings in openssh_configuration_match_blocks.items() %}
+Match {{ pattern }}
+{%   for k,v in settings.items() %}
+{{     render_value(k, v, indent='  ') }}
+{%   endfor %}
+{% endfor %}

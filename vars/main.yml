@@ -1,1 +1,12 @@
 ---
+
+openssh_packages:
+  - openssh-server
+
+openssh_run_directory: /run/sshd
+
+openssh_configuration_file: /etc/ssh/sshd_config
+
+openssh_service: sshd
+
+openssh_default_port: 22

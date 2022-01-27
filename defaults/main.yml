@@ -1,3 +1,5 @@
 ---
 
 openssh_configuration: {}
+
+openssh_configuration_match_blocks: {}

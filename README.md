@@ -3,7 +3,10 @@ Ansible role: openssh
 
 [![Build Status](https://travis-ci.com/Provizanta/ansible-role-openssh.svg?branch=main)](https://travis-ci.com/Provizanta/ansible-role-openssh)
 
-Install openssh server configuration.
+Install openssh server.
+
+Highly inspired by:
+- https://github.com/robertdebock/ansible-role-openssh
 
 Requirements
 ------------
