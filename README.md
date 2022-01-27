@@ -1,9 +1,9 @@
 Ansible role: openssh
 =========
 
-[![Build Status](https://travis-ci.com/Provizanta/ansible-role-openssh.svg?branch=main)](https://travis-ci.com/Provizanta/ansible-role-openssh)
+![main Build status](https://github.com/Provizanta/ansible-role-microk8s/actions/workflows/main.yml/badge.svg)
 
-Install openssh server.
+Install and configure an OpenSSH server.
 
 Highly inspired by:
 - https://github.com/robertdebock/ansible-role-openssh
@@ -18,8 +18,10 @@ Role Variables
 
 These variables are defined in [defaults/main.yml](./defaults/main.yml):
 
+    openssh_configuration: {}
 
-These variables do not have a default value and can be specified:
+    openssh_configuration_match_blocks: {}
+
 
 Dependencies
 ------------
@@ -29,10 +31,17 @@ None
 Example Playbook
 ----------------
 
-    - hosts: localhost
+    - name: Converge
+      hosts: all
       roles:
-        - role: openssh
+        - role: ansible-role-openssh
           vars:
+            openssh_configuration:
+              Port: "22"
+            openssh_configuration_match_blocks:
+              Address 192.168.1.*:
+                PasswordAuthentication: "yes"
+                PermitRootLogin: "yes"
 
 License
 -------
