@@ -1,11 +1,13 @@
 ---
 
 - name: establish packages
+  become: true
   package:
     name: "{{ openssh_packages }}"
     state: present
 
 - name: selinux | allow openssh port
+  become: true
   seport:
     ports: "{{ openssh_configuration['Port'] | default(openssh_default_port) }}"
     proto: "tcp"
@@ -17,6 +19,7 @@
 
 - name: make run directory
   when: ansible_os_family == "Debian"
+  become: true
   file:
     path: "{{ openssh_run_directory }}"
     state: directory
@@ -24,6 +27,7 @@
 
 - name: configure openssh
   when: openssh_configuration != {}
+  become: true
   template:
     dest: "{{ openssh_configuration_file }}"
     src: "sshd_config.j2"
@@ -36,6 +40,7 @@
 
 - name: configure match blocks
   when: openssh_configuration == {}
+  become: true
   loop: "{{ openssh_configuration_match_blocks | dict2items }}"
   blockinfile:
     path: "{{ openssh_configuration_file }}"
@@ -49,6 +54,7 @@
     - restart openssh
 
 - name: start and enable the service
+  become: true
   service:
     name: "{{ openssh_service }}"
     state: started

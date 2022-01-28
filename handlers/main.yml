@@ -3,6 +3,7 @@
 - name: restart openssh
   when:
     - not ansible_check_mode
+  become: true
   service:
     name: "{{ openssh_service }}"
     state: restarted
