@@ -22,6 +22,7 @@ These variables are defined in [defaults/main.yml](./defaults/main.yml):
 
     openssh_configuration_match_blocks: {}
 
+`Include: /etc/ssh/sshd_config.d/*.conf` will always be added to the configuration if the OpenSSH server supports it (> 8.2).
 
 Dependencies
 ------------
@@ -37,7 +38,6 @@ Example Playbook
         - role: ansible-role-openssh
           vars:
             openssh_configuration:
-              #Include: /etc/ssh/sshd_config.d/*.conf
               ## Configuration
               Port: 22
               ListenAddress:

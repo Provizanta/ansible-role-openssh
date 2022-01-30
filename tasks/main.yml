@@ -1,3 +1,4 @@
+# The Include statement in sshd_config is available since version 8.2: https://bugs.debian.org/cgi-bin/bugreport.cgi?bug=631189
 ---
 
 - name: establish packages
@@ -24,6 +25,16 @@
     path: "{{ openssh_run_directory }}"
     state: directory
     mode: "u=rwx,go=rx"
+
+- name: Get SSH version
+  command:
+    argv:
+    - bash
+    - -c
+    - ssh -V 2>&1 | cut -d' ' -f 1 | grep -Eo '[0-9.]+' | head -n 1
+  register: ssh_version
+# also run this task in check mode:
+  check_mode: no
 
 - name: configure openssh
   when: openssh_configuration != {}

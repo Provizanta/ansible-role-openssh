@@ -1,5 +1,9 @@
 {{ ansible_managed | comment }}
 
+{% if ssh_version.stdout is version('8.2', '>') %}
+Include /etc/ssh/sshd_config.d/*.conf
+{% endif %}
+
 {% macro render_value(k,v, indent='') -%}
 {%  if v.__class__.__name__ == 'list' %}
 {%     for vv in v %}
