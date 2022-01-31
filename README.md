@@ -18,10 +18,13 @@ Role Variables
 
 These variables are defined in [defaults/main.yml](./defaults/main.yml):
 
+    openssh_use_dotconfig_when_feasible: false
+
     openssh_configuration: {}
 
     openssh_configuration_match_blocks: {}
 
+Since OpenSSH v8.2 it is possible to use `Include` statement to load configuration from an [explicit directory](https://bugs.debian.org/cgi-bin/bugreport.cgi?bug=631189) (by default from `/etc/ssh/sshd_config.d`). The `openssh_add_dotconfig_when_feasible` enforces this pattern, when enabled.
 
 Dependencies
 ------------
@@ -37,7 +40,7 @@ Example Playbook
         - role: ansible-role-openssh
           vars:
             openssh_configuration:
-              #Include: /etc/ssh/sshd_config.d/*.conf
+              Include: /etc/ssh/sshd_config.d/*.conf
               ## Configuration
               Port: 22
               ListenAddress:

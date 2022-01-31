@@ -2,6 +2,7 @@
 
 galaxy_info:
   role_name: openssh
+  namespace: provizanta
   author: Tibor Csóka
   description: |
     "Establish the openssh server configuration."

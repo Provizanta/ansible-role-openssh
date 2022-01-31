@@ -5,8 +5,8 @@
   roles:
     - role: ansible-role-openssh
       vars:
+        openssh_use_dotconfig_when_feasible: true
         openssh_configuration:
-          #Include: /etc/ssh/sshd_config.d/*.conf
           ## Configuration
           Port: 22
           ListenAddress:
@@ -16,9 +16,8 @@
             - LANG
             - LANGUAGE
             - LC_*
-          PrintMotd: no
-          Subsystem: sftp  /usr/lib/openssh/sftp-server
-          UsePAM: yes
+          PrintMotd: "no"
+          UsePAM: "yes"
           ## Ciphers
           Ciphers: aes128-ctr,aes192-ctr,aes256-ctr
           HostKeyAlgorithms: ecdsa-sha2-nistp256,ecdsa-sha2-nistp384,ecdsa-sha2-nistp521,ssh-rsa,ssh-dss
@@ -26,14 +25,14 @@
           MACs: hmac-sha2-256,hmac-sha2-512,hmac-sha1
           ## Security
           # Protocol: 2
-          PasswordAuthentication: no
-          PermitRootLogin: no
-          PermitEmptyPasswords: no
-          AllowTcpForwarding: no
-          AllowStreamLocalForwarding: no
-          GatewayPorts: no
-          PermitTunnel: no
-          ChallengeResponseAuthentication: no
+          PasswordAuthentication: "no"
+          PermitRootLogin: "no"
+          PermitEmptyPasswords: "no"
+          AllowTcpForwarding: "no"
+          AllowStreamLocalForwarding: "no"
+          GatewayPorts: "no"
+          PermitTunnel: "no"
+          ChallengeResponseAuthentication: "no"
           ClientAliveInterval: 180
           MaxAuthTries: 5
-          X11Forwarding: no
+          X11Forwarding: "no"
