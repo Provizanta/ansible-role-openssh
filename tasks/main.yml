@@ -25,11 +25,62 @@
     state: directory
     mode: "u=rwx,go=rx"
 
+- name: generate host keys
+  become: true
+  command:
+    cmd: "ssh-keygen -A"
+  changed_when: false
+
+- name: check installed version
+  shell: "ssh -V 2>&1"
+  register: _openssh_version_output
+  changed_when: false
+  failed_when: false
+
+- name: extract version
+  when: not _openssh_version_output.failed
+  set_fact:
+    _openssh_version: "{{ _openssh_version_output.stdout.split(' ') | first | regex_search('[0-9.]+') }}"
+  tags: always
+
+- name: facts | use config dirs
+  set_fact:
+    _openssh_can_use_config_dirs: "{{
+      openssh_use_dotconfig_when_feasible and
+      not _openssh_version_output.failed and
+      _openssh_version is defined and
+      _openssh_version is version('8.2', '>=') }}"
+  tags: always
+
+- name: establish configuration file directory
+  become: true
+  when:
+    - _openssh_can_use_config_dirs
+  loop: "{%
+       if 'Include' not in openssh_configuration %}{{ [openssh_configuration_file_d] }}{%
+       elif openssh_configuration['Include'].__class__.__name__ == 'list' %}{{
+         openssh_configuration['Include'] | map('dirname') | list }}{%
+       else %}{{ [openssh_configuration['Include'] | dirname] }}{% endif %}"
+  file:
+    path: "{{ item }}"
+    mode: "u=rwx,go=rx"
+    owner: root
+    group: root
+    state: directory
+
+- name: set configuration file path
+  set_fact:
+    _openssh_config_file_path: "{{ (_openssh_can_use_config_dirs and 'Include' not in openssh_configuration)
+      | ternary(openssh_configuration_file_d + '00-base.conf',
+                openssh_configuration_file) }}"
+  tags: always
+
 - name: configure openssh
-  when: openssh_configuration != {}
+  when:
+    - openssh_configuration != {}
   become: true
   template:
-    dest: "{{ openssh_configuration_file }}"
+    dest: "{{ _openssh_config_file_path }}"
     src: "sshd_config.j2"
     mode: "u=rw,go=r"
     owner: root
@@ -39,11 +90,12 @@
     - restart openssh
 
 - name: configure match blocks
-  when: openssh_configuration == {}
+  when:
+    - openssh_configuration == {}
   become: true
   loop: "{{ openssh_configuration_match_blocks | dict2items }}"
   blockinfile:
-    path: "{{ openssh_configuration_file }}"
+    path: "{{ _openssh_config_file_path }}"
     validate: sshd -f %s -t
     block: |
       Match {{ item.key }}
@@ -55,6 +107,7 @@
 
 - name: start and enable the service
   become: true
+  when: not ansible_check_mode
   service:
     name: "{{ openssh_service }}"
     state: started

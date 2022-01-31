@@ -1,5 +1,7 @@
 ---
 
+openssh_use_dotconfig_when_feasible: false
+
 openssh_configuration: {}
 
 openssh_configuration_match_blocks: {}
