@@ -9,6 +9,6 @@ openssh_configuration_file: /etc/ssh/sshd_config
 
 openssh_configuration_file_d: /etc/ssh/sshd_config.d/
 
-openssh_service: sshd
+openssh_service: ssh
 
 openssh_default_port: 22
