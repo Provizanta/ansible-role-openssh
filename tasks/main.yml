@@ -6,18 +6,7 @@
     name: "{{ openssh_packages }}"
     state: present
 
-- name: selinux | allow openssh port
-  become: true
-  seport:
-    ports: "{{ openssh_configuration['Port'] | default(openssh_default_port) }}"
-    proto: "tcp"
-    setype: "ssh_port_t"
-    state: "present"
-  when:
-    - ansible_selinux.status is defined
-    - ansible_selinux.status == "enabled"
-
-- name: make run directory
+- name: establish run directory
   when: ansible_os_family == "Debian"
   become: true
   file:
@@ -37,71 +26,27 @@
   changed_when: false
   failed_when: false
 
-- name: extract version
-  when: not _openssh_version_output.failed
-  set_fact:
-    _openssh_version: "{{ _openssh_version_output.stdout.split(' ') | first | regex_search('[0-9.]+') }}"
-  tags: always
-
-- name: facts | use config dirs
-  set_fact:
-    _openssh_can_use_config_dirs: "{{
-      openssh_use_dotconfig_when_feasible and
-      not _openssh_version_output.failed and
-      _openssh_version is defined and
-      _openssh_version is version('8.2', '>=') }}"
-  tags: always
-
 - name: establish configuration file directory
   become: true
-  when:
-    - _openssh_can_use_config_dirs
-  loop: "{%
-       if 'Include' not in openssh_configuration %}{{ [openssh_configuration_file_d] }}{%
-       elif openssh_configuration['Include'].__class__.__name__ == 'list' %}{{
-         openssh_configuration['Include'] | map('dirname') | list }}{%
-       else %}{{ [openssh_configuration['Include'] | dirname] }}{% endif %}"
   file:
-    path: "{{ item }}"
+    path: "{{ openssh_configuration_file_d }}"
     mode: "u=rwx,go=rx"
     owner: root
     group: root
     state: directory
 
-- name: set configuration file path
-  set_fact:
-    _openssh_config_file_path: "{{ (_openssh_can_use_config_dirs and 'Include' not in openssh_configuration)
-      | ternary(openssh_configuration_file_d + '00-base.conf',
-                openssh_configuration_file) }}"
-  tags: always
-
 - name: configure openssh
-  when:
-    - openssh_configuration != {}
+  loop: "{{ openssh_configuration | default({}) | dict2items }}"
   become: true
+  vars:
+    content: "{{ item.value }}"
   template:
-    dest: "{{ _openssh_config_file_path }}"
+    dest: "{{ openssh_configuration_file_d }}/{{ item.key }}.conf"
     src: "sshd_config.j2"
     mode: "u=rw,go=r"
     owner: root
     group: root
-    validate: sshd -f %s -t
-  notify:
-    - restart openssh
-
-- name: configure match blocks
-  when:
-    - openssh_configuration == {}
-  become: true
-  loop: "{{ openssh_configuration_match_blocks | dict2items }}"
-  blockinfile:
-    path: "{{ _openssh_config_file_path }}"
-    validate: sshd -f %s -t
-    block: |
-      Match {{ item.key }}
-      {% for k,v in item.items() %}
-          {{ k }} {{ v }}
-      {% endfor %}
+    validate: /usr/sbin/sshd -f %s -t
   notify:
     - restart openssh
 
