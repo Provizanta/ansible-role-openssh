@@ -1,7 +1,7 @@
 Ansible role: openssh
 =========
 
-![main Build status](https://github.com/Provizanta/ansible-role-microk8s/actions/workflows/main.yml/badge.svg)
+![main Build status](https://github.com/Provizanta/ansible-role-openssh/actions/workflows/main.yml/badge.svg)
 
 Install and configure an OpenSSH server.
 
