@@ -2,38 +2,66 @@
 
 - name: establish packages
   become: true
-  package:
+  ansible.builtin.package:
     name: "{{ openssh_packages }}"
     state: present
 
 - name: establish run directory
   when: ansible_os_family == "Debian"
   become: true
-  file:
+  ansible.builtin.file:
     path: "{{ openssh_run_directory }}"
     state: directory
     mode: "u=rwx,go=rx"
 
 - name: generate host keys
   become: true
-  command:
+  ansible.builtin.command:
     cmd: "ssh-keygen -A"
   changed_when: false
 
 - name: check installed version
-  shell: "ssh -V 2>&1"
+  ansible.builtin.shell: "ssh -V 2>&1"
   register: _openssh_version_output
   changed_when: false
   failed_when: false
 
 - name: establish configuration file directory
   become: true
-  file:
+  ansible.builtin.file:
     path: "{{ openssh_configuration_file_d }}"
     mode: "u=rwx,go=rx"
     owner: root
     group: root
     state: directory
+
+- name: find existing configuration files 
+  become: true
+  ansible.builtin.find:
+    paths: "{{ openssh_configuration_file_d }}/"
+    file_type: file
+    recurse: false
+    patterns: "^.*\\.conf$"
+    use_regex: true
+  changed_when: false
+  register: _configs
+
+- name: remove obsoleted configurations
+  become: true
+  loop: "{{ _configs.files
+    | map(attribute='path')
+    | map('basename')
+    | list
+    | difference(openssh_configuration | default({})
+      | dict2items
+      | map(attribute='key')
+      | map('regex_replace', '$', '.conf')
+      | list) }}"
+  file:
+    path: "{{ openssh_configuration_file_d }}/{{ item }}"
+    state: absent
+  notify:
+    - restart openssh
 
 - name: configure openssh
   loop: "{{ openssh_configuration | default({}) | dict2items }}"
