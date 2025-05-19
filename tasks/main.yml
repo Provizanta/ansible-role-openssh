@@ -35,7 +35,7 @@
     group: root
     state: directory
 
-- name: find existing configuration files 
+- name: find existing configuration files
   become: true
   ansible.builtin.find:
     paths: "{{ openssh_configuration_file_d }}/"
