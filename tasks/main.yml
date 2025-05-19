@@ -57,7 +57,7 @@
       | map(attribute='key')
       | map('regex_replace', '$', '.conf')
       | list) }}"
-  file:
+  ansible.builtin.file:
     path: "{{ openssh_configuration_file_d }}/{{ item }}"
     state: absent
   notify:
